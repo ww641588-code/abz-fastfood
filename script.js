@@ -13,7 +13,7 @@ async function saveOrder(order) {
   try {
     alert("Request backend tak ja rahi hai ✅");
 
-    const response = await fetch("http://127.0.0.1:3000/orders", {
+    const response = await fetch("https://abz-fastfood-backend.onrender.com/orders", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
