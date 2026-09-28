@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ABZ FASTFOOD</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#fff7ed;color:#222}
+header{background:#111;color:#fff;padding:18px 5%;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000}
+.logo{font-size:27px;font-weight:bold}.logo span{color:#ff7900}
+.header-buttons{display:flex;gap:10px}.header-buttons button{border:0;padding:11px 15px;border-radius:10px;cursor:pointer;font-weight:bold}
+.add-product-btn{background:#ff7900;color:#fff}.cart-btn{background:#fff;color:#111}
+.hero{text-align:center;padding:45px 15px 25px}.hero h1{font-size:42px}.hero h1 span{color:#ff7900}.hero p{margin-top:10px;color:#777;font-size:17px}
+.search-container{text-align:center;padding:15px}.search-container input{width:90%;max-width:650px;padding:16px 22px;border:2px solid #ff7900;border-radius:30px;outline:0;font-size:16px}
+.categories{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:15px}.category-btn{border:0;background:#fff;padding:13px 20px;border-radius:25px;cursor:pointer;font-weight:bold;box-shadow:0 3px 12px #00000014}.category-btn:hover{background:#ff7900;color:#fff}
+.products{width:94%;max-width:1200px;margin:20px auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px}
+.product-card{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 5px 18px #0000001a;transition:.25s}.product-card:hover{transform:translateY(-7px)}
+.product-image{width:100%;height:190px;object-fit:cover}.product-info{padding:17px}.product-info h3{font-size:20px;margin-bottom:7px}.product-info p{color:#777;font-size:14px;min-height:38px}
+.product-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:15px}.price{color:#e65d00;font-size:20px;font-weight:bold}.add-cart{border:0;background:#111;color:#fff;padding:10px 13px;border-radius:9px;cursor:pointer}.add-cart:hover{background:#ff7900}
+.modal{display:none;position:fixed;inset:0;background:#000000a6;align-items:center;justify-content:center;z-index:2000}.modal-content{background:#fff;width:92%;max-width:440px;padding:25px;border-radius:18px;max-height:90vh;overflow-y:auto}.modal-content h2{margin-bottom:20px}.close{float:right;font-size:28px;cursor:pointer}
+.form-group{margin-bottom:15px}.form-group label{display:block;margin-bottom:6px;font-weight:bold}.form-group input,.form-group select{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px}.submit-btn{width:100%;padding:14px;border:0;border-radius:9px;background:#ff7900;color:#fff;font-size:16px;cursor:pointer}
+.cart-item{display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid #ddd}.cart-item img{width:60px;height:60px;object-fit:cover;border-radius:10px}.cart-info{flex:1}.cart-info h4{margin-bottom:5px}.quantity{display:flex;align-items:center;gap:8px;margin-top:6px}.quantity button{border:0;background:#111;color:#fff;width:26px;height:26px;border-radius:5px;cursor:pointer}.remove-btn{border:0;background:#e53935;color:#fff;padding:7px;border-radius:6px;cursor:pointer}.cart-total{text-align:right;font-size:22px;font-weight:bold;margin-top:20px}.checkout-btn{width:100%;margin-top:15px;padding:14px;border:0;border-radius:10px;background:#25D366;color:#fff;font-size:17px;font-weight:bold;cursor:pointer}.empty-cart{text-align:center;padding:30px;color:#777}
+footer{margin-top:50px;padding:25px;background:#111;color:#fff;text-align:center}
+@media(max-width:600px){header{flex-direction:column;gap:15px}.hero h1{font-size:31px}.products{grid-template-columns:repeat(2,1fr);gap:12px}.product-image{height:135px}.product-info{padding:12px}.product-info h3{font-size:16px}.product-info p{font-size:12px}.price{font-size:17px}.add-cart{padding:8px;font-size:12px}}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">ABZ <span>FASTFOOD</span></div>
+<div class="header-buttons">
+<button class="cart-btn" onclick="openCart()">🛒 Cart (<span id="cartCount">0</span>)</button>
+
+</div>
+<button onclick="openOrderHistory()">📦 My Orders</button>
+
+</header>
+
+<section class="hero">
+<h1>Welcome to <span>ABZ FASTFOOD</span></h1>
+<p>🍔 Hot • 🍕 Fresh • 🍟 Delicious</p>
+</section>
+
+<div class="search-container">
+<input type="text" id="searchInput" placeholder="🔍 Search burger, pizza, fries..." oninput="searchProducts()">
+</div>
+
+<div class="categories">
+<button class="category-btn" onclick="filterProducts('all')">🍽️ All</button>
+<button class="category-btn" onclick="filterProducts('burger')">🍔 Burgers</button>
+<button class="category-btn" onclick="filterProducts('pizza')">🍕 Pizza</button>
+<button class="category-btn" onclick="filterProducts('fries')">🍟 Fries</button>
+<button class="category-btn" onclick="filterProducts('shawarma')">🌯 Shawarma</button>
+</div>
+
+<div class="products" id="productList"></div>
+
+<div class="modal" id="productModal">
+<div class="modal-content">
+<span class="close" onclick="closeAddProduct()">×</span>
+<h2>➕ Add Product</h2>
+<div class="form-group"><label>Product Name</label><input type="text" id="productName" placeholder="Example: Chicken Burger"></div>
+<div class="form-group"><label>Price ₹</label><input type="number" id="productPrice" placeholder="Example: 149"></div>
+<div class="form-group"><label>Category</label><select id="productCategory"><option value="burger">🍔 Burger</option><option value="pizza">🍕 Pizza</option><option value="fries">🍟 Fries</option><option value="shawarma">🌯 Shawarma</option></select></div>
+<div class="form-group"><label>Description</label><input type="text" id="productDescription" placeholder="Fresh and delicious"></div>
+<div class="form-group"><label>Product Photo</label><input type="file" id="productImage" accept="image/*"></div>
+<button class="submit-btn" onclick="addProduct()">Add Product</button>
+</div>
+</div>
+
+<div class="modal" id="cartModal">
+<div class="modal-content">
+<span class="close" onclick="closeCart()">×</span>
+<h2>🛒 Your Cart</h2>
+<div id="cartItems"></div>
+<div class="cart-total" id="cartTotal">Total: ₹0</div>
+<button class="checkout-btn" onclick="checkout()">📱 Order on WhatsApp</button>
+</div>
+</div>
+
+<footer><p>© 2026 ABZ FASTFOOD</p><p>Hot • Fresh • Delicious ❤️</p></footer>
+
+<script>
+let products=JSON.parse(localStorage.getItem("abzProducts"))||[
+{id:1,name:"ABZ Special Burger",price:129,category:"burger",description:"Crispy patty, cheese and fresh vegetables.",image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800"},
+{id:2,name:"Chicken Cheese Burger",price:159,category:"burger",description:"Juicy chicken patty with melted cheese.",image:"https://images.unsplash.com/photo-1550547660-d9450f859349?w=800"},
+{id:3,name:"Cheese Pizza",price:199,category:"pizza",description:"Hot pizza loaded with delicious cheese.",image:"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800"},
+{id:4,name:"Chicken Pizza",price:249,category:"pizza",description:"Chicken, cheese and tasty pizza toppings.",image:"https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800"},
+{id:5,name:"Peri Peri Fries",price:79,category:"fries",description:"Crispy golden fries with peri peri seasoning.",image:"https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=800"},
+{id:6,name:"Cheese Fries",price:99,category:"fries",description:"Crispy fries topped with creamy cheese.",image:"https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=800"},
+{id:7,name:"Chicken Shawarma",price:149,category:"shawarma",description:"Juicy chicken with vegetables and creamy sauce.",image:"https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800"},
+{id:8,name:"Cheese Shawarma",price:169,category:"shawarma",description:"Chicken shawarma loaded with melted cheese.",image:"https://images.unsplash.com/photo-1561651823-34feb02250e4?w=800"}];
+
+let cart=JSON.parse(localStorage.getItem("abzCart"))||[];
+
+function saveData(){localStorage.setItem("abzProducts",JSON.stringify(products));localStorage.setItem("abzCart",JSON.stringify(cart))}
+function displayProducts(list=products){
+const el=document.getElementById("productList");el.innerHTML="";
+if(!list.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:50px;color:#777;font-size:18px">😔 No products found</div>';return}
+list.forEach(p=>{el.innerHTML+=`<div class="product-card"><img class="product-image" src="${p.image}" alt="${p.name}"><div class="product-info"><h3>${p.name}</h3><p>${p.description}</p><div class="product-bottom"><div class="price">₹${p.price}</div><button class="add-cart" onclick="addToCart(${p.id})">🛒 Add</button></div></div></div>`})
+}
+function searchProducts(){const s=document.getElementById("searchInput").value.toLowerCase();displayProducts(products.filter(p=>p.name.toLowerCase().includes(s)))}
+function filterProducts(c){displayProducts(c==="all"?products:products.filter(p=>p.category===c))}
+function openAddProduct(){document.getElementById("productModal").style.display="flex"}
+function closeAddProduct(){document.getElementById("productModal").style.display="none"}
+function addProduct(){
+const name=document.getElementById("productName").value.trim(),price=Number(document.getElementById("productPrice").value),category=document.getElementById("productCategory").value,description=document.getElementById("productDescription").value.trim(),file=document.getElementById("productImage").files[0];
+if(!name||!price||!file){alert("Please enter name, price and photo.");return}
+const reader=new FileReader();
+reader.onload=e=>{products.push({id:Date.now(),name,price,category,description:description||"Fresh and delicious ABZ FASTFOOD.",image:e.target.result});saveData();displayProducts();closeAddProduct();document.getElementById("productName").value="";document.getElementById("productPrice").value="";document.getElementById("productDescription").value="";document.getElementById("productImage").value="";alert("Product added successfully! 🎉")};
+reader.readAsDataURL(file)
+}
+function addToCart(id){
+const p=products.find(x=>x.id===id);if(!p)return;
+const existing=cart.find(x=>x.id===id);
+if(existing)existing.quantity++;else cart.push({id:p.id,name:p.name,price:p.price,image:p.image,quantity:1});
+saveData();updateCartCount();alert(p.name+" added to cart 🛒")
+}
+function updateCartCount(){document.getElementById("cartCount").innerText=cart.reduce((s,i)=>s+i.quantity,0)}
+function openCart(){displayCart();document.getElementById("cartModal").style.display="flex"}
+function closeCart(){document.getElementById("cartModal").style.display="none"}
+function displayCart(){
+const el=document.getElementById("cartItems");el.innerHTML="";
+if(!cart.length){el.innerHTML='<div class="empty-cart">🛒<br><br>Your cart is empty</div>';document.getElementById("cartTotal").innerText="Total: ₹0";return}
+let total=0;
+cart.forEach(i=>{total+=i.price*i.quantity;el.innerHTML+=`<div class="cart-item"><img src="${i.image}" alt="${i.name}"><div class="cart-info"><h4>${i.name}</h4><div>₹${i.price}</div><div class="quantity"><button onclick="changeQuantity(${i.id},-1)">−</button><span>${i.quantity}</span><button onclick="changeQuantity(${i.id},1)">+</button></div></div><button class="remove-btn" onclick="removeFromCart(${i.id})">🗑️</button></div>`});
+document.getElementById("cartTotal").innerText="Total: ₹"+total
+}
+function changeQuantity(id,a){const i=cart.find(x=x.id===id);if(!i)return;i.quantity+=a;if(i.quantity<=0)cart=cart.filter(x=>x.id!==id);saveData();updateCartCount();displayCart()}
+function removeFromCart(id){cart=cart.filter(x=>x.id!==id);saveData();updateCartCount();displayCart()}
+
+async function checkout() {
+  if (!cart.length) {
+    alert("Your cart is empty.");
+    return;
+  }
+
+  let total = 0;
+
+  cart.forEach(item => {
+    total += item.price * item.quantity;
+  });
+
+  const order = {
+    id: Date.now(),
+    date: new Date(),
+    items: cart.map(item => ({
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity
+    })),
+    total: total,
+    status: "Order Placed"
+  };
+
+  await saveOrder(order);
+
+  let message = "🍔 *ABZ FASTFOOD ORDER*%0A%0A";
+
+  cart.forEach(item => {
+    const itemTotal = item.price * item.quantity;
+
+    message +=
+      "• " +
+      item.name +
+      " x" +
+      item.quantity +
+      " = ₹" +
+      itemTotal +
+      "%0A";
+  });
+
+  message += "%0A💰 *TOTAL: ₹" + total + "*";
+
+  const phone = "919606236749";
+
+  const whatsappURL =
+    "https://wa.me/" +
+    phone +
+    "?text=" +
+    encodeURIComponent(message);
+
+  window.open(whatsappURL, "_blank");
+
+  cart = [];
+
+  saveData();
+  updateCartCount();
+
+  alert("Order saved successfully ✅");
+}
+displayProducts();updateCartCount();
+</script>
+<div class="modal" id="orderHistoryModal">
+  <div class="modal-content">
+    <span class="close" onclick="closeOrderHistory()">×</span>
+
+    <h2>📦 My Orders</h2>
+
+    <div id="orderHistory"></div>
+  </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
